@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Ankit Goyal
+ */
+
 public class ReleaseDefinition {
 
 private Integer id;

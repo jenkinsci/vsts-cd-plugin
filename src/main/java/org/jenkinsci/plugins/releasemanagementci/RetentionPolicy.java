@@ -1,11 +1,11 @@
 package org.jenkinsci.plugins.releasemanagementci;
 
-/**
- *
- * @author angoya
- */
 import java.util.HashMap;
 import java.util.Map;
+
+/**
+ * @author Ankit Goyal
+ */
 
 public class RetentionPolicy {
 

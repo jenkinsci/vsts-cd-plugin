@@ -22,10 +22,6 @@ import com.google.gson.Gson;
 import org.apache.commons.httpclient.methods.PostMethod;
 
 /**
- *1) WebApi for Java, something similar to nodejs
-2) For post content-type is mandatory
-3) For post api-version is manatory
-
  * @author Ankit Goyal
  */
 public class ReleaseManagementCI extends Notifier{
