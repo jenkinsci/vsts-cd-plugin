@@ -19,6 +19,7 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
 
 import com.google.gson.Gson;
+import org.json.*;
 import org.apache.commons.httpclient.methods.PostMethod;
 
 /**
@@ -76,7 +77,6 @@ public class ReleaseManagementCI extends Notifier{
         if (build.getResult() == Result.SUCCESS)
         {
             TriggerRelease(listener, jobName, buildId, buildName);
-            listener.getLogger().printf("Triggering release for job job %s%n", jobName);
         }
         
         return true;
@@ -96,13 +96,15 @@ public class ReleaseManagementCI extends Notifier{
         createRelease.addRequestHeader("Content-Type", "application/json");
         try
         {
-            listener.getLogger().printf("Fetching release definitions: %s", definitionsUrl);
-            int status = client.executeMethod(getReleaseDefinitions);
-            listener.getLogger().printf("Status: %s", status);
-            
-            String response = getReleaseDefinitions.getResponseBodyAsString();
-            DefinitionResponse definitionResponse = new Gson().fromJson(response, DefinitionResponse.class);
             ReleaseDefinition definition = null;
+            int status = client.executeMethod(getReleaseDefinitions);
+            String response = getReleaseDefinitions.getResponseBodyAsString();
+            if(status >= 300)
+            {
+                listener.getLogger().printf("Status code: %s%n", status);
+                listener.getLogger().printf("Response: %s%n", response);
+            }
+            DefinitionResponse definitionResponse = new Gson().fromJson(response, DefinitionResponse.class);
             for(final ReleaseDefinition rd : definitionResponse.getValue())
             {
                 if(rd.getName().equals(this.releaseDefinitionName))
@@ -114,55 +116,68 @@ public class ReleaseManagementCI extends Notifier{
             
             if(definition != null)
             {
-                Artifact jenkinsArtifact = null;
-                for(final Artifact artifact : definition.getArtifacts())
-                {
-                    if(artifact.getType().equalsIgnoreCase("jenkins") && artifact.getDefinitionReference().getDefinition().getName().equalsIgnoreCase(jobName))
-                    {
-                        jenkinsArtifact = artifact;
-                        break;
-                    }
-                }
-                if(jenkinsArtifact != null)
-                {
-                    String body = "{\"definitionId\":\"" + definition.getId().toString() 
-                            + "\",\"description\":\"Continous integration from jenkins build\",\"artifacts\":[{\"alias\":\"" 
-                            + jenkinsArtifact.getAlias() 
-                            + "\",\"instanceReference\":{\"name\":\"" 
-                            + buildName +"\",\"id\":\""
-                            + buildId + "\"}},]}";
-                    createRelease.setRequestBody(body);
-                    listener.getLogger().printf("Triggering release...");
-                    status = client.executeMethod(createRelease);
-                    //response = createRelease.getResponseBodyAsString();
-                    listener.getLogger().printf("Status: %s", status);
-                    listener.getLogger().printf("Release Url: %s", "TODO:");
-
-                }
+                CreateReleaseForDefinition(definition, jobName, buildName, buildId, createRelease, listener, client);
             }
             else
             {
-                listener.getLogger().printf("No release definition found with name: %s", this.releaseDefinitionName);
+                listener.getLogger().printf("No release definition found with name: %s%n", this.releaseDefinitionName);
             }
         }
         catch(HttpException ex)
         {
-            ex.printStackTrace(listener.error("Unable to get release definitions %s",
+            ex.printStackTrace(listener.error("Unable to get release definitions %s%n",
             definitionsUrl));
         }
         catch(IOException ex)
         {
-            ex.printStackTrace(listener.error("Unable to get release definitions %s",
+            ex.printStackTrace(listener.error("Unable to get release definitions %s%n",
             definitionsUrl));
         }
         catch(Exception ex)
         {
-            ex.printStackTrace(listener.error("Unable to get release definitions %s",
+            ex.printStackTrace(listener.error("Unable to get release definitions %s%n",
             definitionsUrl)); 
         }
         finally
         {
             getReleaseDefinitions.releaseConnection();
+        }
+    }
+
+    private void CreateReleaseForDefinition(ReleaseDefinition definition, String jobName, String buildName, int buildId, PostMethod createRelease, BuildListener listener, HttpClient client) throws JSONException, IOException {
+        int status;
+        String response;
+        Artifact jenkinsArtifact = null;
+        for(final Artifact artifact : definition.getArtifacts())
+        {
+            if(artifact.getType().equalsIgnoreCase("jenkins") && artifact.getDefinitionReference().getDefinition().getName().equalsIgnoreCase(jobName))
+            {
+                jenkinsArtifact = artifact;
+                break;
+            }
+        }
+        if(jenkinsArtifact != null)
+        {
+            String body = "{\"definitionId\":\"" + definition.getId().toString()
+                    + "\",\"description\":\"Continous integration from jenkins build\",\"artifacts\":[{\"alias\":\""
+                    + jenkinsArtifact.getAlias()
+                    + "\",\"instanceReference\":{\"name\":\""
+                    + buildName +"\",\"id\":\""
+                    + buildId + "\"}},]}";
+            createRelease.setRequestBody(body);
+            listener.getLogger().printf("Triggering release...%n");
+            status = client.executeMethod(createRelease);
+            response = createRelease.getResponseBodyAsString();
+            if(status >= 200 && status < 300)
+            {
+                JSONObject object = new JSONObject(response);
+                listener.getLogger().printf("Release Name: %s%n", object.getString("name"));
+                listener.getLogger().printf("Release id: %s%n", object.getString("id"));
+            }
+        }
+        else
+        {
+            listener.getLogger().printf("No jenkins artifact found with name: %s%n", jobName);
         }
     }
     
