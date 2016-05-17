@@ -12,15 +12,8 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.GetMethod;
-
-import com.google.gson.Gson;
+import java.util.List;
 import org.json.*;
-import org.apache.commons.httpclient.methods.PostMethod;
 
 /**
  * @author Ankit Goyal
@@ -73,82 +66,54 @@ public class ReleaseManagementCI extends Notifier{
     {
         String jobName = build.getProject().getName();
         int buildId = build.number;
-        String buildName = build.getDisplayName();
+        String buildNumber = build.getDisplayName();
         if (build.getResult() == Result.SUCCESS)
         {
-            TriggerRelease(listener, jobName, buildId, buildName);
+            ReleaseManagementHttpClient releaseManagementHttpClient = 
+                    new ReleaseManagementHttpClient(
+                            this.collectionUrl.toLowerCase().replaceFirst(".visualstudio.com", ".vsrm.visualstudio.com"),
+                            this.personalAccessToken);
+            
+            try 
+            {
+                ReleaseDefinition releaseDefinition = null;
+                List<ReleaseDefinition> releaseDefinitions = releaseManagementHttpClient.GetReleaseDefinitions(this.projectName);
+                for(final ReleaseDefinition rd : releaseDefinitions)
+                {
+                    if(rd.getName().equals(this.releaseDefinitionName))
+                    {
+                        releaseDefinition = rd;
+                        break;
+                    }
+                }
+
+                if(releaseDefinition == null)
+                {
+                    listener.getLogger().printf("No release definition found with name: %s%n", this.releaseDefinitionName);
+                }
+                else
+                {
+                    CreateRelease(releaseManagementHttpClient, releaseDefinition, jobName, buildNumber, buildId, listener);
+                }
+            } catch (ReleaseManagementExcpetion | JSONException ex)
+            {
+                ex.printStackTrace(listener.error("Failed to trigger release.%n"));
+            }
         }
         
         return true;
     }
     
-    void TriggerRelease(BuildListener listener, String jobName, int buildId, String buildName)
+    void CreateRelease(
+            ReleaseManagementHttpClient releaseManagementHttpClient,
+            ReleaseDefinition releaseDefinition,
+            String jobName,
+            String buildNumber,
+            int buildId,
+            BuildListener listener) throws ReleaseManagementExcpetion, JSONException
     {
-        HttpClient client = new HttpClient();
-        byte[] auth = Base64.encodeBase64(("jenkins:" + this.personalAccessToken).getBytes(Charset.defaultCharset()));
-        String projectUrl = this.collectionUrl.toLowerCase().replaceFirst(".visualstudio.com", ".vsrm.visualstudio.com") + this.projectName;
-        String definitionsUrl = projectUrl + "/_apis/release/definitions?$expand=artifacts";
-        String releaseUrl = projectUrl + "/_apis/release/releases?api-version=3.0-preview.2";
-        GetMethod getReleaseDefinitions = new GetMethod(definitionsUrl);
-        PostMethod createRelease = new PostMethod(releaseUrl);
-        getReleaseDefinitions.addRequestHeader("Authorization", "Basic " + new String(auth, Charset.defaultCharset()));
-        createRelease.addRequestHeader("Authorization", "Basic " + new String(auth, Charset.defaultCharset()));
-        createRelease.addRequestHeader("Content-Type", "application/json");
-        try
-        {
-            ReleaseDefinition definition = null;
-            int status = client.executeMethod(getReleaseDefinitions);
-            String response = getReleaseDefinitions.getResponseBodyAsString();
-            if(status >= 300)
-            {
-                listener.getLogger().printf("Status code: %s%n", status);
-                listener.getLogger().printf("Response: %s%n", response);
-            }
-            DefinitionResponse definitionResponse = new Gson().fromJson(response, DefinitionResponse.class);
-            for(final ReleaseDefinition rd : definitionResponse.getValue())
-            {
-                if(rd.getName().equals(this.releaseDefinitionName))
-                {
-                    definition = rd;
-                    break;
-                }
-            }
-            
-            if(definition != null)
-            {
-                CreateReleaseForDefinition(definition, jobName, buildName, buildId, createRelease, listener, client);
-            }
-            else
-            {
-                listener.getLogger().printf("No release definition found with name: %s%n", this.releaseDefinitionName);
-            }
-        }
-        catch(HttpException ex)
-        {
-            ex.printStackTrace(listener.error("Unable to get release definitions %s%n",
-            definitionsUrl));
-        }
-        catch(IOException ex)
-        {
-            ex.printStackTrace(listener.error("Unable to get release definitions %s%n",
-            definitionsUrl));
-        }
-        catch(Exception ex)
-        {
-            ex.printStackTrace(listener.error("Unable to get release definitions %s%n",
-            definitionsUrl)); 
-        }
-        finally
-        {
-            getReleaseDefinitions.releaseConnection();
-        }
-    }
-
-    private void CreateReleaseForDefinition(ReleaseDefinition definition, String jobName, String buildName, int buildId, PostMethod createRelease, BuildListener listener, HttpClient client) throws JSONException, IOException {
-        int status;
-        String response;
         Artifact jenkinsArtifact = null;
-        for(final Artifact artifact : definition.getArtifacts())
+        for(final Artifact artifact : releaseDefinition.getArtifacts())
         {
             if(artifact.getType().equalsIgnoreCase("jenkins") && artifact.getDefinitionReference().getDefinition().getName().equalsIgnoreCase(jobName))
             {
@@ -156,28 +121,23 @@ public class ReleaseManagementCI extends Notifier{
                 break;
             }
         }
-        if(jenkinsArtifact != null)
+        if(jenkinsArtifact == null)
         {
-            String body = "{\"definitionId\":\"" + definition.getId().toString()
-                    + "\",\"description\":\"Continous integration from jenkins build\",\"artifacts\":[{\"alias\":\""
-                    + jenkinsArtifact.getAlias()
-                    + "\",\"instanceReference\":{\"name\":\""
-                    + buildName +"\",\"id\":\""
-                    + buildId + "\"}},]}";
-            createRelease.setRequestBody(body);
-            listener.getLogger().printf("Triggering release...%n");
-            status = client.executeMethod(createRelease);
-            response = createRelease.getResponseBodyAsString();
-            if(status >= 200 && status < 300)
-            {
-                JSONObject object = new JSONObject(response);
-                listener.getLogger().printf("Release Name: %s%n", object.getString("name"));
-                listener.getLogger().printf("Release id: %s%n", object.getString("id"));
-            }
+            listener.getLogger().printf("No jenkins artifact found with name: %s%n", jobName);
         }
         else
         {
-            listener.getLogger().printf("No jenkins artifact found with name: %s%n", jobName);
+            String body = "{\"definitionId\":\"" + releaseDefinition.getId().toString()
+                    + "\",\"description\":\"Continous integration from jenkins build\",\"artifacts\":[{\"alias\":\""
+                    + jenkinsArtifact.getAlias()
+                    + "\",\"instanceReference\":{\"name\":\""
+                    + buildNumber +"\",\"id\":\""
+                    + buildId + "\"}},]}";
+            listener.getLogger().printf("Triggering release...%n");
+            String response = releaseManagementHttpClient.CreateRelease(this.projectName, body);
+            JSONObject object = new JSONObject(response);
+            listener.getLogger().printf("Release Name: %s%n", object.getString("name"));
+            listener.getLogger().printf("Release id: %s%n", object.getString("id"));
         }
     }
     
