@@ -113,6 +113,10 @@ public class ReleaseManagementCI extends Notifier{
             BuildListener listener) throws ReleaseManagementExcpetion, JSONException
     {
         Artifact jenkinsArtifact = null;
+        if(releaseDefinition.getArtifacts().size() > 1)
+        {
+            throw new ReleaseManagementExcpetion("Auto trigger does not work if their are multiple artifact sources associated to a release definition");
+        }
         for(final Artifact artifact : releaseDefinition.getArtifacts())
         {
             if(artifact.getType().equalsIgnoreCase("jenkins") && artifact.getDefinitionReference().getDefinition().getName().equalsIgnoreCase(jobName))
