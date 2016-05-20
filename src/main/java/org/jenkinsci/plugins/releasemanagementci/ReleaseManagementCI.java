@@ -23,11 +23,12 @@ public class ReleaseManagementCI extends Notifier{
     public final String collectionUrl;
     public final String projectName;
     public final String releaseDefinitionName;
-    public final String personalAccessToken;
+    public final String username;
+    public final String password;
     
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public ReleaseManagementCI(String collectionUrl, String projectName, String releaseDefinitionName, String personalAccessToken)
+    public ReleaseManagementCI(String collectionUrl, String projectName, String releaseDefinitionName, String username, String password)
     {
         if (collectionUrl.endsWith("/"))
         {
@@ -41,7 +42,8 @@ public class ReleaseManagementCI extends Notifier{
         //this.collectionUrl = this.collectionUrl.toLowerCase().replaceFirst(".visualstudio.com", ".vsrm.visualstudio.com");
         this.projectName = projectName;
         this.releaseDefinitionName = releaseDefinitionName;
-        this.personalAccessToken = personalAccessToken;
+        this.username = username;
+        this.password = password;
     }
 
     /*
@@ -72,7 +74,8 @@ public class ReleaseManagementCI extends Notifier{
             ReleaseManagementHttpClient releaseManagementHttpClient = 
                     new ReleaseManagementHttpClient(
                             this.collectionUrl.toLowerCase().replaceFirst(".visualstudio.com", ".vsrm.visualstudio.com"),
-                            this.personalAccessToken);
+                            this.username,
+                            this.password);
             
             try 
             {

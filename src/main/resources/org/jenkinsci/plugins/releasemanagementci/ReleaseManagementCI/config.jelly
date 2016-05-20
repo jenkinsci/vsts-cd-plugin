@@ -9,7 +9,10 @@
   <f:entry title="Release Definition" field="releaseDefinitionName">
     <f:textbox field="releaseDefinitionName"/>
   </f:entry>
-  <f:entry title="Personal Access Token" field="personalAccessToken">
-    <f:password field="personalAccessToken"/>
+  <f:entry title="Username" field="username">
+    <f:textbox field="username"/>
+  </f:entry>
+  <f:entry title="Password/PAT" field="password">
+    <f:password field="password"/>
   </f:entry>
 </j:jelly>

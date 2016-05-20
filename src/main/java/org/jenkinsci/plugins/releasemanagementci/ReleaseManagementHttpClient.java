@@ -20,16 +20,18 @@ import org.apache.commons.httpclient.methods.PostMethod;
 public class ReleaseManagementHttpClient
 {
     private final HttpClient httpClient;
-    private final String personalAccessToken;
+    private final String username;
+    private final String password;
     private final String accountUrl;
     private final String basicAuth;
     
-    ReleaseManagementHttpClient(String accountUrl, String personalAccessToken)
+    ReleaseManagementHttpClient(String accountUrl, String username, String password)
     {
         this.accountUrl = accountUrl;
-        this.personalAccessToken = personalAccessToken;
+        this.username = username;
+        this.password = password;
         this.httpClient = new HttpClient();
-        this.basicAuth = "Basic " + new String(Base64.encodeBase64((this.personalAccessToken + ":").getBytes(Charset.defaultCharset())), Charset.defaultCharset());
+        this.basicAuth = "Basic " + new String(Base64.encodeBase64((this.username + ":" + this.password).getBytes(Charset.defaultCharset())), Charset.defaultCharset());
     }
     
     public List<ReleaseDefinition> GetReleaseDefinitions(String project) throws ReleaseManagementExcpetion
