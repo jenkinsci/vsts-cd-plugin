@@ -171,7 +171,7 @@ public class ReleaseManagementCI extends Notifier{
         @Override
         public String getDisplayName() 
         {
-            return "Release Management CI";
+            return "VS Team Services continuous delivery";
         }
 
     }
