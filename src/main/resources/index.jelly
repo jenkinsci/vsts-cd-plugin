@@ -3,5 +3,5 @@
   This view is used to render the installed plugins page.
 -->
 <div>
-  This plugin is to trigger a release in Visual Studio Team Services post build.
+  Trigger a release in TFS or VS Team Services, when a build completes successfully
 </div>
