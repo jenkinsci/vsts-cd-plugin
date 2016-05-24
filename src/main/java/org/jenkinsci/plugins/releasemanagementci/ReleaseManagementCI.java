@@ -173,7 +173,7 @@ public class ReleaseManagementCI extends Notifier{
         @Override
         public String getDisplayName() 
         {
-            return "VS Team Services continuous delivery";
+            return "VS Team Services Continuous Deployment";
         }
 
     }
