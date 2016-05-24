@@ -93,12 +93,13 @@ public class ReleaseManagementCI extends Notifier{
                 if(releaseDefinition == null)
                 {
                     listener.getLogger().printf("No release definition found with name: %s%n", this.releaseDefinitionName);
+                    listener.getLogger().println("Release will not be triggered.");
                 }
                 else
                 {
                     CreateRelease(releaseManagementHttpClient, releaseDefinition, jobName, buildNumber, buildId, listener);
                 }
-            } catch (ReleaseManagementExcpetion | JSONException ex)
+            } catch (ReleaseManagementException | JSONException ex)
             {
                 ex.printStackTrace(listener.error("Failed to trigger release.%n"));
             }
@@ -113,12 +114,12 @@ public class ReleaseManagementCI extends Notifier{
             String jobName,
             String buildNumber,
             int buildId,
-            BuildListener listener) throws ReleaseManagementExcpetion, JSONException
+            BuildListener listener) throws ReleaseManagementException, JSONException
     {
         Artifact jenkinsArtifact = null;
         if(releaseDefinition.getArtifacts().size() > 1)
         {
-            throw new ReleaseManagementExcpetion("Auto trigger does not work if their are multiple artifact sources associated to a release definition");
+            throw new ReleaseManagementException("Auto trigger does not work if their are multiple artifact sources associated to a release definition.");
         }
         for(final Artifact artifact : releaseDefinition.getArtifacts())
         {
@@ -142,6 +143,7 @@ public class ReleaseManagementCI extends Notifier{
                     + buildId + "\"}},]}";
             listener.getLogger().printf("Triggering release...%n");
             String response = releaseManagementHttpClient.CreateRelease(this.projectName, body);
+            listener.getLogger().printf("Successfully triggered release.%n");
             JSONObject object = new JSONObject(response);
             listener.getLogger().printf("Release Name: %s%n", object.getString("name"));
             listener.getLogger().printf("Release id: %s%n", object.getString("id"));

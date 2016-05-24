@@ -34,7 +34,7 @@ public class ReleaseManagementHttpClient
         this.basicAuth = "Basic " + new String(Base64.encodeBase64((this.username + ":" + this.password).getBytes(Charset.defaultCharset())), Charset.defaultCharset());
     }
     
-    public List<ReleaseDefinition> GetReleaseDefinitions(String project) throws ReleaseManagementExcpetion
+    public List<ReleaseDefinition> GetReleaseDefinitions(String project) throws ReleaseManagementException
     {
         String url = this.accountUrl + project + "/_apis/release/definitions?$expand=artifacts";
         String response = this.ExecuteGetMethod(url);
@@ -42,13 +42,13 @@ public class ReleaseManagementHttpClient
         return definitionResponse.getValue();
     }
     
-    public String CreateRelease(String project, String body) throws ReleaseManagementExcpetion
+    public String CreateRelease(String project, String body) throws ReleaseManagementException
     {
         String url = this.accountUrl + project + "/_apis/release/releases?api-version=3.0-preview.2";
         return this.ExecutePostmethod(url, body);
     }
     
-    private String ExecutePostmethod(String url, String body) throws ReleaseManagementExcpetion
+    private String ExecutePostmethod(String url, String body) throws ReleaseManagementException
     {
         PostMethod postMethod = new PostMethod(url);
         postMethod.addRequestHeader("Authorization", this.basicAuth);
@@ -61,26 +61,26 @@ public class ReleaseManagementHttpClient
             response = postMethod.getResponseBodyAsString();
             if(status >= 300)
             {
-                throw new ReleaseManagementExcpetion("Error occurred.%nStatus: " + status + "%nResponse: " + response + "%n");
+                throw new ReleaseManagementException("Error occurred.%nStatus: " + status + "%nResponse: " + response + "%n");
             }
         }
         catch(HttpException ex)
         {
-            throw new ReleaseManagementExcpetion(ex);
+            throw new ReleaseManagementException(ex);
         }
         catch(IOException ex)
         {
-            throw new ReleaseManagementExcpetion(ex);
+            throw new ReleaseManagementException(ex);
         }
         catch(Exception ex)
         {
-            throw new ReleaseManagementExcpetion(ex);
+            throw new ReleaseManagementException(ex);
         }
         
         return response;
     }
     
-    private String ExecuteGetMethod(String url) throws ReleaseManagementExcpetion
+    private String ExecuteGetMethod(String url) throws ReleaseManagementException
     {
         GetMethod getMethod = new GetMethod(url);
         getMethod.addRequestHeader("Authorization", this.basicAuth);
@@ -91,20 +91,20 @@ public class ReleaseManagementHttpClient
             response = getMethod.getResponseBodyAsString();
             if(status >= 300)
             {
-                throw new ReleaseManagementExcpetion("Error occurred.%nStatus: " + status + "%nResponse: " + response + "%n");
+                throw new ReleaseManagementException("Error occurred.%nStatus: " + status + "%nResponse: " + response + "%n");
             }
         }
         catch(HttpException ex)
         {
-            throw new ReleaseManagementExcpetion(ex);
+            throw new ReleaseManagementException(ex);
         }
         catch(IOException ex)
         {
-            throw new ReleaseManagementExcpetion(ex);
+            throw new ReleaseManagementException(ex);
         }
         catch(Exception ex)
         {
-            throw new ReleaseManagementExcpetion(ex);
+            throw new ReleaseManagementException(ex);
         }
         
         return response;

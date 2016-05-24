@@ -4,9 +4,9 @@ package org.jenkinsci.plugins.releasemanagementci;
  * @author Ankit Goyal
  */
 
-public class ReleaseManagementExcpetion extends Exception
+public class ReleaseManagementException extends Exception
 {
-    public ReleaseManagementExcpetion()
+    public ReleaseManagementException()
     {
         super();
     }
@@ -18,7 +18,7 @@ public class ReleaseManagementExcpetion extends Exception
      *        The detail message (which is saved for later retrieval
      *        by the {@link #getMessage()} method)
      */
-    public ReleaseManagementExcpetion(String message)
+    public ReleaseManagementException(String message)
     {
         super(message);
     }
@@ -42,7 +42,7 @@ public class ReleaseManagementExcpetion extends Exception
      *
      * @since 1.6
      */
-    public ReleaseManagementExcpetion(String message, Throwable cause)
+    public ReleaseManagementException(String message, Throwable cause)
     {
         super(message, cause);
     }
@@ -61,7 +61,7 @@ public class ReleaseManagementExcpetion extends Exception
      *
      * @since 1.6
      */
-    public ReleaseManagementExcpetion(Throwable cause)
+    public ReleaseManagementException(Throwable cause)
     {
         super(cause);
     }
