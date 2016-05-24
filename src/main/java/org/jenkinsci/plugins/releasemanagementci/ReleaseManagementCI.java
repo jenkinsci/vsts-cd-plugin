@@ -135,8 +135,9 @@ public class ReleaseManagementCI extends Notifier{
         }
         else
         {
+            String description = "Triggered by " + buildNumber;
             String body = "{\"definitionId\":\"" + releaseDefinition.getId().toString()
-                    + "\",\"description\":\"Continous integration from jenkins build\",\"artifacts\":[{\"alias\":\""
+                    + "\",\"description\":\"" + description + "\",\"artifacts\":[{\"alias\":\""
                     + jenkinsArtifact.getAlias()
                     + "\",\"instanceReference\":{\"name\":\""
                     + buildNumber +"\",\"id\":\""
