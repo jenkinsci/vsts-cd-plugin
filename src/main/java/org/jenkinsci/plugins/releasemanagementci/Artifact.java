@@ -14,7 +14,7 @@ public class Artifact
     private String type;
     private String alias;
     private DefinitionReference definitionReference;
-    private final Map<String, Object> additionalProperties = new HashMap<>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
     * 

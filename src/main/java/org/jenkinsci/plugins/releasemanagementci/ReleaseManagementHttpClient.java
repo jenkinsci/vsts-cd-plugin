@@ -114,8 +114,8 @@ public class ReleaseManagementHttpClient
     {
 
         private Integer count;
-        private List<ReleaseDefinition> value = new ArrayList<>();
-        private final Map<String, Object> additionalProperties = new HashMap<>();
+        private List<ReleaseDefinition> value = new ArrayList<ReleaseDefinition>();
+        private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
         /**
         * 

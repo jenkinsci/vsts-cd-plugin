@@ -99,7 +99,12 @@ public class ReleaseManagementCI extends Notifier{
                 {
                     CreateRelease(releaseManagementHttpClient, releaseDefinition, jobName, buildNumber, buildId, listener);
                 }
-            } catch (ReleaseManagementException | JSONException ex)
+            }
+            catch (ReleaseManagementException ex)
+            {
+                ex.printStackTrace(listener.error("Failed to trigger release.%n"));
+            }
+            catch (JSONException ex)
             {
                 ex.printStackTrace(listener.error("Failed to trigger release.%n"));
             }

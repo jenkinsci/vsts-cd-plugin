@@ -12,7 +12,7 @@ public class DefinitionReference
 
     private Definition definition;
     private Project project;
-    private final Map<String, Object> additionalProperties = new HashMap<>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
     * 

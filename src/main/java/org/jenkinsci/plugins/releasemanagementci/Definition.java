@@ -12,7 +12,7 @@ public class Definition
 
     private String id;
     private String name;
-    private final Map<String, Object> additionalProperties = new HashMap<>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
     * 

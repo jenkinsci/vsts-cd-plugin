@@ -15,7 +15,7 @@ public class CreatedBy
     private String uniqueName;
     private String url;
     private String imageUrl;
-    private final Map<String, Object> additionalProperties = new HashMap<>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
     * 

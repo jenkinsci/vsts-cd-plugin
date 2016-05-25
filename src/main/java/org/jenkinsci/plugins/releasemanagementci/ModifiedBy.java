@@ -14,7 +14,7 @@ private String displayName;
 private String uniqueName;
 private String url;
 private String imageUrl;
-private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
 /**
 * 

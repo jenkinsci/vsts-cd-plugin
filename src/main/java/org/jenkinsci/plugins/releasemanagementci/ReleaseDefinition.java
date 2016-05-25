@@ -11,7 +11,6 @@ import java.util.Map;
 
 public class ReleaseDefinition
 {
-
     private Integer id;
     private Integer revision;
     private String name;
@@ -19,11 +18,11 @@ public class ReleaseDefinition
     private String createdOn;
     private ModifiedBy modifiedBy;
     private String modifiedOn;
-    private List<Artifact> artifacts = new ArrayList<>();
+    private List<Artifact> artifacts = new ArrayList<Artifact>();
     private String releaseNameFormat;
     private RetentionPolicy retentionPolicy;
     private String url;
-    private final Map<String, Object> additionalProperties = new HashMap<>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
     * 
