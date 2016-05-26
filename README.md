@@ -17,7 +17,7 @@ Just like any other plugin installation, go to **Manage Jenkins** -> **Manage pl
 
 Assuming that you have already [created the Release Definition](https://www.visualstudio.com/en-us/docs/release/author-release-definition/more-release-definition) and [linked the Jenkins as artifact source](https://www.visualstudio.com/en-us/docs/release/author-release-definition/understanding-artifacts#jenkins) in Vs Team Service - Release Manaegment, you need to follow the following steps at the Jenkins side to trigger releases automatically, upon build creation.
 
-** 0. Setup Release Definition with Jenkins as artifact source**
+**0. Setup Release Definition with Jenkins as artifact source**
 This document assumes that you have already set up the RM definition that uses Jenkins artifact to deploy. This means your build/job is configured properly and archives artifacts. If not, see the following video to set up Release Definition with Jenkins build
 
 [![Release Jenkins artifact](screenshots/rmWithJenkins-YT.png)](https://www.youtube.com/watch?v=ZC4hWYqdP_o&index=5&list=PLP3SfFPBD6cTJ2Jp5cHvjQ3flrbwQu-nN)
@@ -29,9 +29,9 @@ Go to the Job configuration and add the post build action - **VS Team Services C
 
 **2. Fill in the required fields**
 Fill in the details required for this post build action. You need the following details:
-* **Collection URL: ** e.g. https://fabfiber.visualstudio.com/**DefaultCollection** <- Note that you need the url till the collection.
-* **Team project: ** The VS Team Services Project in which you have defined the release definition.
-* **Release definition: ** The Release definition **name** that links this Jenkins job as an artifact source.
+* **Collection URL:** e.g. https://fabfiber.visualstudio.com/**DefaultCollection** <- Note that you need the url till the collection.
+* **Team project:** The VS Team Services Project in which you have defined the release definition.
+* **Release definition:** The Release definition **name** that links this Jenkins job as an artifact source.
 
 You need to now enter the credentials that lets Jenkins trigger a release with the latest completed build, on your behalf. If you are using VS Team Services, you just need to enter **PAT** with atleast "Release (read, write and execute)" scope. (Refer to this [link](https://www.visualstudio.com/en-us/get-started/setup/use-personal-access-tokens-to-authenticate) to understand how to create PAT). In case you are using TFS, you need to enter the **username** and **password**.
 
