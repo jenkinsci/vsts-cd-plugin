@@ -17,8 +17,16 @@ Just like any other plugin installation, go to **Manage Jenkins** -> **Manage pl
 
 Assuming that you have already [created the Release Definition](https://www.visualstudio.com/en-us/docs/release/author-release-definition/more-release-definition) and [linked the Jenkins as artifact source](https://www.visualstudio.com/en-us/docs/release/author-release-definition/understanding-artifacts#jenkins) in Vs Team Service - Release Manaegment, you need to follow the following steps at the Jenkins side to trigger releases automatically, upon build creation.
 
-1. Add the post build action
-2. Fill in the required fields
+** 0. Setup Release Definition with Jenkins as artifact source**
+This document assumes that you have already set up the RM definition that uses Jenkins artifact to deploy. This means your build/job is configured properly and archives artifacts. If not, see the following video to set up Release Definition with Jenkins build
+
+[![IMAGE ALT TEXT HERE](screenshots/rmWithJenkins-YT.png)](https://www.youtube.com/watch?v=ZC4hWYqdP_o&index=5&list=PLP3SfFPBD6cTJ2Jp5cHvjQ3flrbwQu-nN)
+
+
+**1. Add the post build action**
+Go to your 
+
+**2. Fill in the required fields**
 3. All set. See CD in action
 
 
