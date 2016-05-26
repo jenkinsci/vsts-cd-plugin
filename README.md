@@ -33,7 +33,7 @@ Fill in the details required for this post build action. You need the following 
 * **Team project: ** The VS Team Services Project in which you have defined the release definition.
 * **Release definition: ** The Release definition **name** that links this Jenkins job as an artifact source.
 
-You need to now enter the credentials that lets Jenkins trigger a release with the latest completed build, on your behalf. If you are using VS Team Services, you just need to enter **PAT**. (Refer to this link to understand how to create PAT). In case you are using TFS, you need to enter the **username** and **password**.
+You need to now enter the credentials that lets Jenkins trigger a release with the latest completed build, on your behalf. If you are using VS Team Services, you just need to enter **PAT** with atleast "Release (read, write and execute)" scope. (Refer to this [link](https://www.visualstudio.com/en-us/get-started/setup/use-personal-access-tokens-to-authenticate) to understand how to create PAT). In case you are using TFS, you need to enter the **username** and **password**.
 
 ![Add post build action](screenshots/fillFieldsForPostBuildAction.png)
 
