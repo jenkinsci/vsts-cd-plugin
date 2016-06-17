@@ -1,5 +1,7 @@
 # Visual Studio Team Services Continuous Deployment
 
+[MSDN documentation](https://blogs.msdn.microsoft.com/visualstudioalm/2016/05/27/continuous-deploymentdelivery-with-jenkins-and-vs-team-services/)
+
 This plugin lets you trigger a release in Visual Studio Team Services, through a post-build step in Jenkins.
 
 ### Overview
