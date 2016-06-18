@@ -48,6 +48,14 @@ public class ReleaseManagementHttpClient
         return this.ExecutePostmethod(url, body);
     }
     
+    public ReleaseArtifactVersionsResponse GetVersions(String project, List<Artifact> artifacts) throws ReleaseManagementException
+    {
+        String url = this.accountUrl + project + "/_apis/release/artifacts/versions?api-version=3.0-preview.1";
+        final String body = new Gson().toJson(artifacts);
+        String response = this.ExecutePostmethod(url, body);
+        return new Gson().fromJson(response, ReleaseArtifactVersionsResponse.class);
+    }
+    
     private String ExecutePostmethod(String url, String body) throws ReleaseManagementException
     {
         PostMethod postMethod = new PostMethod(url);

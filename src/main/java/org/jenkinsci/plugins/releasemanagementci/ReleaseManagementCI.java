@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.releasemanagementci;
 
+import com.google.gson.Gson;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.model.AbstractBuild;
@@ -12,6 +13,7 @@ import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.json.*;
 
@@ -122,10 +124,6 @@ public class ReleaseManagementCI extends Notifier{
             BuildListener listener) throws ReleaseManagementException, JSONException
     {
         Artifact jenkinsArtifact = null;
-        if(releaseDefinition.getArtifacts().size() > 1)
-        {
-            throw new ReleaseManagementException("Auto trigger does not work if their are multiple artifact sources associated to a release definition.");
-        }
         for(final Artifact artifact : releaseDefinition.getArtifacts())
         {
             if(artifact.getType().equalsIgnoreCase("jenkins") && artifact.getDefinitionReference().getDefinition().getName().equalsIgnoreCase(jobName))
@@ -134,19 +132,57 @@ public class ReleaseManagementCI extends Notifier{
                 break;
             }
         }
+        
         if(jenkinsArtifact == null)
         {
             listener.getLogger().printf("No jenkins artifact found with name: %s%n", jobName);
         }
         else
         {
+            List<ReleaseArtifact> releaseArtifacts = new ArrayList<ReleaseArtifact>();
+            for(final Artifact artifact : releaseDefinition.getArtifacts())
+            {
+                ReleaseArtifact releaseArtifact = new ReleaseArtifact();
+                if(artifact == jenkinsArtifact)
+                {
+                    releaseArtifact.setAlias(artifact.getAlias());
+                    InstanceReference instanceReference = new InstanceReference();
+                    instanceReference.setName(buildNumber);
+                    instanceReference.setId(Integer.toString(buildId));
+                    releaseArtifact.setInstanceReference(instanceReference);
+                }
+                else
+                {   
+                    List<Artifact> artifactList = new ArrayList<Artifact>();
+                    artifactList.add(artifact);
+                    ReleaseArtifactVersionsResponse response = releaseManagementHttpClient.GetVersions(projectName, artifactList);
+                    if(response.getArtifactVersions().isEmpty())
+                    {
+                        throw new ReleaseManagementException("Could not fetch versions for the linked artifact sources");
+                    }
+                    if(response.getArtifactVersions().get(0).getVersions().isEmpty())
+                    {
+                        throw new ReleaseManagementException("Could not fetch versions for the linked artifact: " + artifact.getAlias());
+                    }
+                    
+                    releaseArtifact.setAlias(artifact.getAlias());
+                    InstanceReference instanceReference = new InstanceReference();
+                    instanceReference.setName(response.getArtifactVersions().get(0).getVersions().get(0).getName());
+                    instanceReference.setId(response.getArtifactVersions().get(0).getVersions().get(0).getId());
+                    releaseArtifact.setInstanceReference(instanceReference);
+                }
+                
+                releaseArtifacts.add(releaseArtifact);
+            }
+            
             String description = "Triggered by " + buildNumber;
-            String body = "{\"definitionId\":\"" + releaseDefinition.getId().toString()
-                    + "\",\"description\":\"" + description + "\",\"artifacts\":[{\"alias\":\""
-                    + jenkinsArtifact.getAlias()
-                    + "\",\"instanceReference\":{\"name\":\""
-                    + buildNumber +"\",\"id\":\""
-                    + buildId + "\"}},]}";
+            ReleaseBody releaseBody = new ReleaseBody();
+            releaseBody.setDescription(description);
+            releaseBody.setDefinitionId(releaseDefinition.getId());
+            releaseBody.setArtifacts(releaseArtifacts);
+            releaseBody.setIsDraft(false);
+            String body  = new Gson().toJson(releaseBody);
+
             listener.getLogger().printf("Triggering release...%n");
             String response = releaseManagementHttpClient.CreateRelease(this.projectName, body);
             listener.getLogger().printf("Successfully triggered release.%n");
