@@ -14,6 +14,7 @@ import hudson.tasks.Publisher;
 import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.json.*;
 
@@ -139,42 +140,13 @@ public class ReleaseManagementCI extends Notifier{
         }
         else
         {
-            List<ReleaseArtifact> releaseArtifacts = new ArrayList<ReleaseArtifact>();
-            for(final Artifact artifact : releaseDefinition.getArtifacts())
-            {
-                ReleaseArtifact releaseArtifact = new ReleaseArtifact();
-                if(artifact == jenkinsArtifact)
-                {
-                    releaseArtifact.setAlias(artifact.getAlias());
-                    InstanceReference instanceReference = new InstanceReference();
-                    instanceReference.setName(buildNumber);
-                    instanceReference.setId(Integer.toString(buildId));
-                    releaseArtifact.setInstanceReference(instanceReference);
-                }
-                else
-                {   
-                    List<Artifact> artifactList = new ArrayList<Artifact>();
-                    artifactList.add(artifact);
-                    ReleaseArtifactVersionsResponse response = releaseManagementHttpClient.GetVersions(projectName, artifactList);
-                    if(response.getArtifactVersions().isEmpty())
-                    {
-                        throw new ReleaseManagementException("Could not fetch versions for the linked artifact sources");
-                    }
-                    if(response.getArtifactVersions().get(0).getVersions().isEmpty())
-                    {
-                        throw new ReleaseManagementException("Could not fetch versions for the linked artifact: " + artifact.getAlias());
-                    }
-                    
-                    releaseArtifact.setAlias(artifact.getAlias());
-                    InstanceReference instanceReference = new InstanceReference();
-                    instanceReference.setName(response.getArtifactVersions().get(0).getVersions().get(0).getName());
-                    instanceReference.setId(response.getArtifactVersions().get(0).getVersions().get(0).getId());
-                    releaseArtifact.setInstanceReference(instanceReference);
-                }
-                
-                releaseArtifacts.add(releaseArtifact);
-            }
-            
+            List<ReleaseArtifact> releaseArtifacts = PrepareReleaseArtifacts(
+                    releaseDefinition,
+                    jenkinsArtifact,
+                    buildNumber,
+                    buildId,
+                    listener,
+                    releaseManagementHttpClient);            
             String description = "Triggered by " + buildNumber;
             ReleaseBody releaseBody = new ReleaseBody();
             releaseBody.setDescription(description);
@@ -190,6 +162,41 @@ public class ReleaseManagementCI extends Notifier{
             listener.getLogger().printf("Release Name: %s%n", object.getString("name"));
             listener.getLogger().printf("Release id: %s%n", object.getString("id"));
         }
+    }
+
+    private List<ReleaseArtifact> PrepareReleaseArtifacts(ReleaseDefinition releaseDefinition, Artifact jenkinsArtifact, String buildNumber, int buildId, BuildListener listener, ReleaseManagementHttpClient releaseManagementHttpClient) throws ReleaseManagementException {
+        List<ReleaseArtifact> releaseArtifacts = new ArrayList<ReleaseArtifact>();
+        InstanceReference instanceReference = new InstanceReference();
+        for(final Artifact artifact : releaseDefinition.getArtifacts())
+        {
+            ReleaseArtifact releaseArtifact = new ReleaseArtifact();
+            if(artifact == jenkinsArtifact)
+            {
+                instanceReference.setName(buildNumber);
+                instanceReference.setId(Integer.toString(buildId));
+            }
+            else
+            {
+                listener.getLogger().printf("Fetching latest version for artifact: %s%n", artifact.getAlias());
+                ReleaseArtifactVersionsResponse response = releaseManagementHttpClient.GetVersions(this.projectName, new ArrayList<Artifact>(Arrays.asList(artifact)));
+                if(response.getArtifactVersions().isEmpty())
+                {
+                    throw new ReleaseManagementException("Could not fetch versions for the linked artifact sources");
+                }
+                if(response.getArtifactVersions().get(0).getVersions().isEmpty())
+                {
+                    throw new ReleaseManagementException("Could not fetch versions for the linked artifact: " + artifact.getAlias());
+                }
+                
+                instanceReference.setName(response.getArtifactVersions().get(0).getVersions().get(0).getName());
+                instanceReference.setId(response.getArtifactVersions().get(0).getVersions().get(0).getId());
+            }
+            
+            releaseArtifact.setAlias(artifact.getAlias());
+            releaseArtifact.setInstanceReference(instanceReference);
+            releaseArtifacts.add(releaseArtifact);
+        }
+        return releaseArtifacts;
     }
     
     @Extension
