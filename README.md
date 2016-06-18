@@ -45,4 +45,4 @@ Go ahead and test your setup by manually triggering a build in Jenkins or by a c
 
 ### FAQs
 **1. If I have multiple artifacts linked in my Release Definition, will this plugin trigger a release?** <br>
-**A:** No. Currently, for this plugin to work, you can have just one artifact source linked to the Release Definition. This scenario will soon be supported though.
+**A:** Yes, it is supported from 1.3 version onwards.
