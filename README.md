@@ -1,4 +1,7 @@
-# Visual Studio Team Services Continuous Deployment
+# Announcement
+The functionality of this plugin has been moved to [TFS plugin](https://github.com/jenkinsci/tfs-plugin) with enhanced functionality. The use of this plugin is now **deprecated**. The repository will also be passively monitored. 
+
+## Visual Studio Team Services Continuous Deployment
 
 [MSDN documentation](https://blogs.msdn.microsoft.com/visualstudioalm/2016/05/27/continuous-deploymentdelivery-with-jenkins-and-vs-team-services/)
 
